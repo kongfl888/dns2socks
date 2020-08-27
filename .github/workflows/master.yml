@@ -1,0 +1,42 @@
+# [K] (c) 2020
+
+name: SYN
+
+on:
+  schedule:
+    - cron: '30 2 5 */2 *'
+
+jobs:
+  create:
+
+    runs-on: ubuntu-18.04
+    if: github.repository == 'kongfl888/dns2socks'
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@main
+      with:
+        ref: master
+
+    - name: Set git identity
+      run : |
+        git config --global user.email "kongfl888@outlook.com"
+        git config --global user.name "kongfl888 K"
+    - name: Git Init
+      run:  |
+        wget --no-check-certificate https://downloads.sourceforge.net/dns2socks/SourceCode.zip -O /tmp/SourceCode1.zip || echo ""
+        wget --no-check-certificate https://downloads.sourceforge.net/dns2socks/SourceCode.zip -O /tmp/SourceCode2.zip || echo ""
+        md5sum /tmp/SourceCode1.zip > /tmp/md5.txt
+        sed -i 's/SourceCode1.zip/SourceCode2.zip/g' /tmp/md5.txt
+        cat /tmp/md5.txt
+        mkdir -p /tmp/sc
+        rm -rf /tmp/sc/*
+        [ `md5sum -c /tmp/md5.txt | grep "[oO][Kk]" -c` -gt 0 ] && unzip /tmp/SourceCode1.zip -d /tmp/sc
+        cp -rf /tmp/sc/* ./ || echo ""
+        git add .
+        git commit -s -m "Update from sourceforge.net" || echo ''
+    - name: Push Commits
+      env:
+        DOWNSTREAM_BRANCH: master
+      run:  |
+        git push --force origin $DOWNSTREAM_BRANCH
